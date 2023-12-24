@@ -26,11 +26,8 @@ COPY src/ .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install waitress
 
 ENV PATH="$PATH:/home/rmanager/.local/bin/"
 
-
-
 # Run app.py when the container launches
-CMD ["waitress-serve", "app:app"]
+CMD ["uvicorn", "app:app", "--reload","--host","0.0.0.0"]
