@@ -4,10 +4,6 @@ import subprocess
 
 app = FastAPI()
 
-def create_index(x):
-    links = [i[0] for i in x]
-    return dict(zip([y.replace("/", "") for y in links], links))
-
 async def generator(command):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, universal_newlines=False)
     try:
@@ -19,6 +15,7 @@ async def generator(command):
                 yield output
     finally:
         process.terminate()
+
 
 @app.get("/iostats")
 async def generate_iostats():
