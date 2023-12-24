@@ -1,8 +1,11 @@
-from flask import Flask, Response, stream_with_context
+from flask import Flask, Response, stream_with_context, render_template
 import subprocess
 import time
 app = Flask(__name__)
 
+def create_index(x):
+    links=[i[0] for i in x]
+    return dict(zip(links,[y.replace("/","") for y in links]))
 
 def generate_iostats():
     return generator("iostat 5 | jc --iostat-s -u")
@@ -18,6 +21,7 @@ routes = [
     ('/nvidia', generate_nvidia),
     ('/amd', generate_amd)
 ]
+
 
 def generator(command):
     # Start the sar subprocess
@@ -44,9 +48,14 @@ def generator(command):
             _process.kill()
 
 
+@app.route('/')
+def index():
+    return render_template('index.html', endpoints=create_index(routes))
+
+
 for route, view_func in routes:
     view_func = app.route(route)(view_func)
 
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True,host='0.0.0.0')
+    app.run(threaded=True,host='0.0.0.0')

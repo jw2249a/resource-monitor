@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <ul>
+        {% for path, description in endpoints.items() %}
+            <li><a href="{{ path }}">{{ description }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
