@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 docker run  \
-       -d \
+       -it \
        --gpus all \
        -p 5000:8000 \
        --mount type=bind,source=/var/log/sysstat/,target=/var/log/sysstat/,readonly\

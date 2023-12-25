@@ -30,4 +30,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 ENV PATH="$PATH:/home/rmanager/.local/bin/"
 
 # Run app.py when the container launches
-CMD ["uvicorn", "app:app", "--reload","--host","0.0.0.0"]
+CMD ["uvicorn", "app:app","--host","0.0.0.0", "--workers", "20","--log-level","info"]

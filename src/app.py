@@ -1,30 +1,25 @@
 from fastapi import FastAPI
-from starlette.responses import StreamingResponse
+from fastapi.responses import JSONResponse
+import json
 import subprocess
 
 app = FastAPI()
 
-async def generator(command):
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, universal_newlines=False)
-    try:
-        while True:
-            output = process.stdout.readline()
-            if output == '' and process.poll() is not None:
-                break
-            if output:
-                yield output
-    finally:
-        process.terminate()
+def execute_command(command):
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    output, error = process.communicate()
+    if process.returncode != 0:
+        raise Exception(f"Command failed with error: {error.strip()}")
+    return json.loads(output.strip())
 
+@app.get("/iostats", response_class=JSONResponse)
+def generate_iostats():
+    return execute_command("iostat -h -o JSON")
 
-@app.get("/iostats")
-async def generate_iostats():
-    return StreamingResponse(generator("iostat 5 | jc --iostat-s -u"), media_type="text/plain")
+@app.get("/nvidia", response_class=JSONResponse)
+def generate_nvidia():
+    return execute_command("nvidia-smi -x -q | xmltojson --stdin")
 
-@app.get("/nvidia")
-async def generate_nvidia():
-    return StreamingResponse(generator("while true; do nvidia-smi -x -q | xmltojson --stdin; sleep 5; done"), media_type="text/plain")
-
-@app.get("/amd")
-async def generate_amd():
-    return StreamingResponse(generator("while true; do rocm-smi -aPfutbcglM --json; sleep 5; done"), media_type="text/plain")
+@app.get("/amd", response_class=JSONResponse)
+def generate_amd():
+    return execute_command("rocm-smi -aPfutbcglM --json")
